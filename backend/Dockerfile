@@ -1,14 +1,16 @@
-FROM golang:1.20-alpine AS build
+FROM golang:1.20-bullseye AS build
 
 WORKDIR /app
 
-# Install build dependencies for CGO/SQLite
-RUN apk add --no-cache gcc musl-dev
+# Install build dependencies for SQLite
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libc6-dev \
+    libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Enable CGO for sqlite3
 ENV CGO_ENABLED=1
-# Use build tags to fix issues with musl libc on Alpine
-ENV GOFLAGS="-tags=sqlite_omit_load_extension,sqlite_use_uri"
 
 COPY go.mod go.sum ./
 RUN go mod download
@@ -16,8 +18,12 @@ RUN go mod download
 COPY . .
 RUN go build -o main .
 
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates sqlite
+FROM debian:bullseye-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libsqlite3-0 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=build /app/main .
 
@@ -25,10 +31,9 @@ COPY --from=build /app/main .
 RUN mkdir -p /app/config /app/templates /app/static
 
 # Copy any necessary static files or configurations
-# Using separate RUN statements to handle missing directories
-RUN if [ -d "./config" ]; then cp -r ./config/* /app/config/ 2>/dev/null || true; fi
-RUN if [ -d "./templates" ]; then cp -r ./templates/* /app/templates/ 2>/dev/null || true; fi
-RUN if [ -d "./static" ]; then cp -r ./static/* /app/static/ 2>/dev/null || true; fi
+COPY --from=build /app/config/. /app/config/
+COPY --from=build /app/templates/. /app/templates/
+COPY --from=build /app/static/. /app/static/
 
 EXPOSE 5001
 CMD ["./main"] 
