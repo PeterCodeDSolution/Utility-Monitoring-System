@@ -1,4 +1,4 @@
-FROM golang:1.20-alpine AS builder
+FROM golang:1.20-alpine AS build
 
 WORKDIR /app
 
@@ -9,12 +9,14 @@ COPY . .
 RUN go build -o main .
 
 FROM alpine:latest
-
+RUN apk --no-cache add ca-certificates
 WORKDIR /app
+COPY --from=build /app/main .
 
-COPY --from=builder /app/main .
-COPY .env .
+# Copy any necessary static files or configurations
+COPY ./config ./config
+COPY ./templates ./templates
+COPY ./static ./static
 
-EXPOSE 5000
-
+EXPOSE 5001
 CMD ["./main"] 

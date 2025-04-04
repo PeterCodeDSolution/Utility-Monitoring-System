@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 
@@ -48,11 +47,9 @@ func main() {
 
 	// Middleware
 	app.Use(logger.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-		AllowMethods: "GET, POST, PUT, DELETE",
-	}))
+
+	// Setup CORS
+	handlers.SetupCORS(app)
 
 	// API routes
 	api := app.Group("/api")
@@ -67,10 +64,18 @@ func main() {
 	api.Get("/map-data", handlers.GetMapData)
 	api.Get("/clients/:id", handlers.GetClient)
 
+	// Health check endpoint for Render
+	api.Get("/health", func(c *fiber.Ctx) error {
+		return c.Status(200).JSON(fiber.Map{
+			"status":  "ok",
+			"message": "Server is running",
+		})
+	})
+
 	// Server startup
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "5000"
+		port = "5001"
 	}
 
 	log.Printf("Server starting on port %s", port)
