@@ -2,6 +2,12 @@ FROM golang:1.20-alpine AS build
 
 WORKDIR /app
 
+# Install build dependencies for CGO/SQLite
+RUN apk add --no-cache gcc musl-dev
+
+# Enable CGO for sqlite3
+ENV CGO_ENABLED=1
+
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -9,7 +15,7 @@ COPY . .
 RUN go build -o main .
 
 FROM alpine:latest
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates sqlite
 WORKDIR /app
 COPY --from=build /app/main .
 
