@@ -17,9 +17,10 @@ COPY --from=build /app/main .
 RUN mkdir -p /app/config /app/templates /app/static
 
 # Copy any necessary static files or configurations
-COPY ./config/. /app/config/ || echo "No config files found"
-COPY ./templates/. /app/templates/ || echo "No template files found"
-COPY ./static/. /app/static/ || echo "No static files found"
+# Using separate RUN statements to handle missing directories
+RUN if [ -d "./config" ]; then cp -r ./config/* /app/config/ 2>/dev/null || true; fi
+RUN if [ -d "./templates" ]; then cp -r ./templates/* /app/templates/ 2>/dev/null || true; fi
+RUN if [ -d "./static" ]; then cp -r ./static/* /app/static/ 2>/dev/null || true; fi
 
 EXPOSE 5001
 CMD ["./main"] 
