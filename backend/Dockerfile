@@ -7,6 +7,8 @@ RUN apk add --no-cache gcc musl-dev
 
 # Enable CGO for sqlite3
 ENV CGO_ENABLED=1
+# Use build tags to fix issues with musl libc on Alpine
+ENV GOFLAGS="-tags=sqlite_omit_load_extension,sqlite_use_uri"
 
 COPY go.mod go.sum ./
 RUN go mod download
