@@ -18,6 +18,9 @@ RUN go mod download
 COPY . .
 RUN go build -o main .
 
+# Create empty directories if they don't exist to avoid errors in COPY
+RUN mkdir -p /app/config /app/templates /app/static
+
 FROM debian:bullseye-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -27,13 +30,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY --from=build /app/main .
 
-# Create directories if they don't exist
+# Create directories in final image
 RUN mkdir -p /app/config /app/templates /app/static
 
-# Copy any necessary static files or configurations
-COPY --from=build /app/config/. /app/config/
-COPY --from=build /app/templates/. /app/templates/
-COPY --from=build /app/static/. /app/static/
+# Skip copying directories with a shell command instead of COPY
+# This avoids Docker build errors when source directories are empty
+RUN --mount=from=build,src=/app,target=/tmp/app \
+    cp -r /tmp/app/config/* /app/config/ 2>/dev/null || true && \
+    cp -r /tmp/app/templates/* /app/templates/ 2>/dev/null || true && \
+    cp -r /tmp/app/static/* /app/static/ 2>/dev/null || true
 
 EXPOSE 5001
 CMD ["./main"] 
