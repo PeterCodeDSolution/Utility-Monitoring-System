@@ -56,6 +56,7 @@ A full-stack demo project for monitoring water and chemical usage in industrial 
 ### Deployment
 - Docker and Docker Compose
 - Environment-based configuration
+- Railway.app for cloud deployment
 
 ## 🚀 Getting Started
 
@@ -67,8 +68,8 @@ A full-stack demo project for monitoring water and chemical usage in industrial 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/utility-demo.git
-   cd utility-demo
+   git clone https://github.com/PeterCodeDSolution/Utility-Monitoring-System.git
+   cd Utility-Monitoring-System
    ```
 
 2. Start the application using Docker Compose:
@@ -94,6 +95,40 @@ The application comes with pre-seeded demo accounts:
 
 - LINE Login (simulated):
   - Click the "Continue with LINE" button on the login page
+
+## 🚂 Deploying to Railway
+
+This project is configured for easy deployment to [Railway](https://railway.app). Follow these steps to deploy:
+
+1. **Sign up or log in to Railway**
+   - Create an account at [railway.app](https://railway.app) if you don't have one already.
+
+2. **Create a new project in Railway**
+   - Click the "New Project" button
+   - Select "Deploy from GitHub repo"
+   - Connect to your GitHub account and select the Utility-Monitoring-System repository
+
+3. **Configure the environment variables**
+   - In your Railway project, go to the "Variables" tab
+   - Add the environment variables as shown in the `.env.example` file:
+     - `PORT` (e.g., 3000)
+     - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+     - `JWT_SECRET`
+     - `ENVIRONMENT` (set to 'production')
+     - `RAILWAY_STATIC_URL` (will be automatically set by Railway)
+
+4. **Deploy the application**
+   - Railway will automatically detect the Docker configuration and deploy your application
+   - Monitor the deployment progress in the "Deployments" tab
+
+5. **Access your deployed application**
+   - Once deployed, click on the domain URL provided by Railway to access your application
+
+### Monitoring and Maintenance
+
+- Use Railway's dashboard to monitor your application's health and logs
+- Railway provides built-in monitoring for CPU and memory usage
+- Automatic deployments are triggered when you push to your GitHub repository
 
 ## 📊 API Endpoints
 
@@ -156,6 +191,8 @@ go run main.go
 │   └── main.go          # Entry point
 │
 ├── docker-compose.yml   # Docker Compose configuration
+├── railway.json         # Railway deployment configuration
+├── Procfile             # Process file for Railway
 └── README.md            # Project documentation
 ```
 
