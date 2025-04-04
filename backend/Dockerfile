@@ -13,10 +13,13 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY --from=build /app/main .
 
+# Create directories if they don't exist
+RUN mkdir -p /app/config /app/templates /app/static
+
 # Copy any necessary static files or configurations
-COPY ./config ./config
-COPY ./templates ./templates
-COPY ./static ./static
+COPY ./config/. /app/config/ || echo "No config files found"
+COPY ./templates/. /app/templates/ || echo "No template files found"
+COPY ./static/. /app/static/ || echo "No static files found"
 
 EXPOSE 5001
 CMD ["./main"] 
